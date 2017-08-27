@@ -15,7 +15,7 @@ dataset = [[] for i in range(num_classes)]
 for index, value in enumerate(x):
     dataset[ int(y[index]) ].append(value)
 
-ngram = [5,6,7]
+ngram = [1,2,3,4]
 for n in ngram:
     for index, c in enumerate(dataset):
         print 'Computing %d_gram for class %d' % (n,index)
