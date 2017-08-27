@@ -3,7 +3,15 @@ import pdb
 import numpy as np
 
 num_classes = 12
-ngrams = [1,2,3,4,5] 
+ngrams = [5]
+
+def normalize(x):
+    if len(np.unique(x)) == 1:
+        x = np.ones(len(x))
+    pos_min = np.min(x[x > 0])
+    x[x == 0] = pos_min / 2  # filter value
+    sums = np.sum(x)    
+    return x/sums
 
 with open('xval.txt', 'r') as f:
     x = f.read().splitlines()
@@ -18,19 +26,25 @@ for i in range(num_classes):
 
 print('Loading completed')
 print('Start classifying')
+count = 0
 
-with open('result.txt', 'w') as f:
+with open('1_7_result.txt', 'w') as f:
     for string in x:
+        count = count + 1
+        if count % 20 == 0:
+            print "classifying sentence %d " % count
+        classification = np.ones((len(ngrams), num_classes))
         for n_index, n in enumerate(ngrams):
-            classification = np.ones((len(ngrams), num_classes))
-            for i in range(len(string)-n-1):
-                for c in range(num_classes):
-                    temp_string = string[i:i+n-1]
+            for i in range(len(string)-n-1): # interate through each substring
+                temp_string = string[i:i+n-1]
+                temp_string_classification = np.zeros(num_classes)
+                for c in range(num_classes): # classify the patch
                     if temp_string in ngram_list[ n_index ][ c ]:
-                        classification[n_index][ c ] = ngram_list[ n_index ][ c ][ temp_string ][ ord(string[i+n]) - 97 ] * classification[n_index][ c ]
-                sums = np.array(np.sum(classification, axis=1))
-                for i in range(len(classification)):
-                    classification[i] = np.divide(classification[i], sums[i])
+                        temp_string_classification[ c ] = ngram_list[ n_index ][ c ][ temp_string ][ ord(string[i+n]) - 97 ]
+                temp_string_classification = normalize(temp_string_classification) # make sure each ngram sums up to 1
+                classification[n_index] = np.multiply(classification[n_index], temp_string_classification)
+                sums = np.sum(classification[n_index])
+                classification[n_index] = np.divide(classification[n_index], sums)
+
         classification = np.sum(classification, axis=0)
         f.write( "%s\n" % np.argmax(classification, axis = 0) )
-            
