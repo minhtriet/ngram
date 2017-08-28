@@ -1,9 +1,13 @@
 import pickle
-import pdb
+import sys
 import numpy as np
 
+if len(sys.argv) < 3:
+    print "python inference.py input_file output_file"
+    sys.exit(1)
+
 num_classes = 12
-ngrams = [5]
+ngrams = [4,5,6,7]
 
 def normalize(x):
     if len(np.unique(x)) == 1:
@@ -13,7 +17,7 @@ def normalize(x):
     sums = np.sum(x)    
     return x/sums
 
-with open('xval.txt', 'r') as f:
+with open( sys.argv[1], 'r') as f:
     x = f.read().splitlines()
 
 ngram_list = np.empty((len(ngrams), num_classes), dtype=object)
@@ -28,7 +32,7 @@ print('Loading completed')
 print('Start classifying')
 count = 0
 
-with open('1_7_result.txt', 'w') as f:
+with open( sys.argv[2], 'w') as f:
     for string in x:
         count = count + 1
         if count % 20 == 0:
